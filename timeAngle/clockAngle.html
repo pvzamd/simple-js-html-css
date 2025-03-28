@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time and Angle</title>
+</head>
+
+<body>
+    <div class="input-group-time">
+        <p>Set a time to see the angle between hour and minute hands. Note that AM/PM do not have any affect on the
+            result. The relaive angle will be calculated irrespective of negative angles. Also only the Acute angle is
+            considered FYI</p>
+        <input type="time" name="choose-time" id="choose-time">
+        <label for="choose-time">Set a time</label>
+        <button type="button" id="checkTimeButtonElement" onclick="checkTime(event)">Find angles with the Time</button>
+        <button type="button" id="resetTimeButtonElement" onclick="resetTime()">Reset Time</button>
+    </div>
+    <div class="input-group-angle">
+        <p>Set a time to see the angle between hour and minute hands. Note that AM/PM do not have any affect on the
+            result. The relaive angle will be calculated irrespective of negative angles. Also only the Acute angle is
+            considered FYI</p>
+        <input type="number" name="choose-angle" id="choose-angle">
+        <label for="choose-angle">Set an angle</label>
+        <button type="button" id="checkAngleButtonElement" onclick="checkAngle(event)">Find possible time for the
+            angle</button>
+        <button type="button" id="resetAngleButtonElement" onclick="resetAngle()">Reset Angle</button>
+    </div>
+    <button type="button" id="timeAngleTableButtonElement" onclick="showTimeAngleTable()">See the table</button>
+
+    <script>
+        let givenTime = "10:10"
+        let givenAngle = "270"
+        const findAngleAt = (t) => {
+            let angle = Math.abs(30 * t.split(":")[0] - 5.5 * t.split(":")[1])
+            return angle < 180 ? angle : 360 - angle
+        }
+
+        let n = "01:00"
+        let [h, m] = n.split(":").map(e => +e)
+        let timeAngleTable = []
+        while (h < 13) {
+            while (m < 60) {
+                n = `${("0" + h).slice(-2)}:${("0" + m).slice(-2)}`
+                m++
+                timeAngleTable.push({ Time: n, Angle: findAngleAt(n) })
+            }
+            m = 0
+            h++
+            n = `${h}:${m}`
+        }
+
+        const findTimesWithAngle = (a) => timeAngleTable.filter(e => e.Angle === Math.abs(a > 180 ? 360 - a : a)).map(e => e.Time)
+
+        const showTimeAngleTable = (timeAngleTableFiltered = timeAngleTable) => {
+
+            if (document.getElementById("angle-table")) {
+                document.body.removeChild(document.getElementById("angle-table"))
+                return
+            }
+
+            let angleTableElement = document.createElement("table")
+            let newRowHeadElement = document.createElement("tr")
+            let tdTimeHeadElement = document.createElement("td")
+            let tdAngleHeadElement = document.createElement("td")
+
+            tdTimeHeadElement.innerText = "Time AM or PM same"
+            tdAngleHeadElement.innerText = "Relative Angle in °"
+
+            newRowHeadElement.appendChild(tdTimeHeadElement)
+            newRowHeadElement.appendChild(tdAngleHeadElement)
+            newRowHeadElement.setAttribute("id", "head-row-id")
+
+            angleTableElement.appendChild(newRowHeadElement)
+            angleTableElement.setAttribute("id", "angle-table")
+            angleTableElement.setAttribute("class", "angle-table")
+
+            document.body.appendChild(angleTableElement)
+
+            for (let i = 0; i < timeAngleTableFiltered.length; i++) {
+                let newRowElement = document.createElement("tr")
+                let tdTimeElement = document.createElement("td")
+                let tdAngleElement = document.createElement("td")
+
+                tdTimeElement.innerText = timeAngleTableFiltered[i].Time
+                tdAngleElement.innerText = timeAngleTableFiltered[i].Angle + "°"
+
+                newRowElement.appendChild(tdTimeElement)
+                newRowElement.appendChild(tdAngleElement)
+
+                newRowElement.setAttribute("id", timeAngleTableFiltered[i].Time)
+                angleTableElement.appendChild(newRowElement)
+            }
+        }
+
+        const resetTime = () => document.getElementById("choose-time").value = null
+        const resetAngle = () => document.getElementById("choose-angle").value = null
+        
+        const checkTime = e => {
+            let userInput = document.getElementById("choose-time").value
+            if (!userInput){
+                alert("Please enter a valid time first")
+                return
+            }
+            userInput = userInput.split(":")
+            userInput[0] = ("0" + (userInput[0] % 12)).slice(-2)
+            userInput = userInput.join(":")
+
+            timeAngleTableFiltered = timeAngleTable.filter(e => e.Time == userInput)
+            
+            showTimeAngleTable(timeAngleTableFiltered)
+        }
+
+        const checkAngle = e => {
+            let userInput = document.getElementById("choose-angle").value
+            console.log(typeof userInput)
+            if (userInput === ""){
+                alert("Please enter a valid angle first")
+                return
+            }
+            userInput = Math.abs(userInput)
+            userInput = userInput>=360?userInput-360:userInput
+            userInput = userInput>180?360-userInput:userInput
+
+            timeAngleTableFiltered = timeAngleTable.filter(e => e.Angle == userInput)
+
+            if (timeAngleTableFiltered.length === 0) alert("Oops! no time have such angle")
+            else showTimeAngleTable(timeAngleTableFiltered)
+        }
+
+    </script>
+</body>
+
+</html>
